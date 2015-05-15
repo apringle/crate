@@ -1,4 +1,4 @@
-package com.apringle.crate;
+package uk.co.alexpringle.crate;
 
 public interface HasId
 {

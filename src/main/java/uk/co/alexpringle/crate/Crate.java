@@ -1,4 +1,4 @@
-package com.apringle.crate;
+package uk.co.alexpringle.crate;
 
 import android.content.ContentValues;
 import android.content.Context;
