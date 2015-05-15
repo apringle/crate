@@ -40,7 +40,7 @@ abstract class Crate<T extends HasId>
     {
     }
 
-    public final T getById(String itemId)
+    public final T withId(String itemId)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
         T item = null;
@@ -64,7 +64,7 @@ abstract class Crate<T extends HasId>
         }
         else
         {
-            Log.d("GroupLab","No item in store with id :" + itemId);
+            Log.d("GroupLab", "No item in store with id :" + itemId);
         }
 
         return item;
@@ -83,7 +83,7 @@ abstract class Crate<T extends HasId>
         return isInDatabase;
     }
 
-    public final List<T> getByTag(String itemTag)
+    public final List<T> withTag(String itemTag)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
 
@@ -108,45 +108,26 @@ abstract class Crate<T extends HasId>
         return items;
     }
 
-    public final T getFirstByTag(String itemTag)
-    {
-        SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
-
-        T item = null;
-        Cursor cursor = database.rawQuery("SELECT * FROM " + tableName + " WHERE " + TAG + " =?", new String[]{itemTag});
-        if(cursor != null && cursor.moveToFirst())
-        {
-            item = gson.fromJson(cursor.getString(cursor.getColumnIndex(ITEM)), getStoreType());
-            cursor.close();
-        }
-        else
-        {
-            Log.d("GroupLab", "No items in store with tag :" + itemTag);
-        }
-
-        return item;
-    }
-
-    public final void replaceTag(Collection<T> items,String itemTag)
+    public final void replace(String itemTag, Collection<T> items)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
         database.delete(tableName, TAG + "=?", new String[]{itemTag});
         for(T item : items)
         {
-            putItem(item,itemTag);
+            put(item, itemTag);
         }
         database.close();
     }
 
-    public final void replaceTag(T item,String itemTag)
+    public final void replace(String itemTag, T item)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
         database.delete(tableName, TAG + "=?", new String[]{itemTag});
-        putItem(item,itemTag);
+        put(item, itemTag);
         database.close();
     }
 
-    public final List<T> getAll()
+    public final List<T> all()
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
 
@@ -171,12 +152,12 @@ abstract class Crate<T extends HasId>
         return items;
     }
 
-    public final void putItem(T item)
+    public final void put(T item)
     {
-        putItem(item,null);
+        put(item, null);
     }
 
-    public final void putItem(T item,String tag)
+    public final void put(T item, String tag)
     {
         beforeSave(item);
         ContentValues values = new ContentValues();
@@ -198,19 +179,19 @@ abstract class Crate<T extends HasId>
         database.close();
     }
 
-    public final void putItems(List<T> items)
+    public final void put(List<T> items)
     {
         for(T currentItem : items)
         {
-            putItem(currentItem,null);
+            put(currentItem, null);
         }
     }
 
-    public final void putItems(List<T> items,String tag)
+    public final void put(List<T> items, String tag)
     {
         for(T currentItem : items)
         {
-            putItem(currentItem,tag);
+            put(currentItem, tag);
         }
     }
 
