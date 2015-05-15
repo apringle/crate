@@ -14,6 +14,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 abstract class Crate<T extends HasId>
@@ -24,14 +25,21 @@ abstract class Crate<T extends HasId>
     private static final String ITEM = "ITEM";
     private static final String TAG = "TAG";
 
+    private static HashMap<String,CrateSQLiteOpenHelper> tableSQLiteHelperMap = new HashMap<String, CrateSQLiteOpenHelper>();
+
     private CrateSQLiteOpenHelper crateSQLiteOpenHelper;
     private Gson gson;
     private String tableName;
 
     protected Crate(Context context)
     {
-        crateSQLiteOpenHelper = new CrateSQLiteOpenHelper(context);
         tableName = this.getClass().getSimpleName();
+        crateSQLiteOpenHelper = tableSQLiteHelperMap.get(tableName);
+        if(crateSQLiteOpenHelper == null)
+        {
+            crateSQLiteOpenHelper = new CrateSQLiteOpenHelper(context, tableName);
+            tableSQLiteHelperMap.put(tableName,crateSQLiteOpenHelper);
+        }
         gson = new Gson();
     }
 
@@ -216,18 +224,20 @@ abstract class Crate<T extends HasId>
         }
     }
 
-    protected final Type getStoreType()
+    private Type getStoreType()
     {
         ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
         return parameterizedType.getActualTypeArguments()[0];
     }
 
-    private class CrateSQLiteOpenHelper extends SQLiteOpenHelper
+    private static class CrateSQLiteOpenHelper extends SQLiteOpenHelper
     {
+        private String tableName;
 
-        public CrateSQLiteOpenHelper(Context context)
+        public CrateSQLiteOpenHelper(Context context,String tableName)
         {
             super(context,DATABASE_NAME,null,STORE_VERSION);
+            this.tableName = tableName;
         }
 
         @Override
