@@ -20,9 +20,9 @@ abstract class Crate<T extends HasId>
 {
     private static final int STORE_VERSION = 1;
     private static final String DATABASE_NAME = "CRATE_DATABASE";
-    protected static final String ID = "ID";
-    protected static final String ITEM = "ITEM";
-    protected static final String TAG = "TAG";
+    private static final String ID = "ID";
+    private static final String ITEM = "ITEM";
+    private static final String TAG = "TAG";
 
     private CrateSQLiteOpenHelper crateSQLiteOpenHelper;
     private Gson gson;
