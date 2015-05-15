@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-abstract class Store<T extends HasId> extends SQLiteOpenHelper
+abstract class Store<T extends HasId>
 {
     private static final int STORE_VERSION = 1;
     private static final String DATABASE_NAME = "CRATE_DATABASE";
@@ -24,43 +24,17 @@ abstract class Store<T extends HasId> extends SQLiteOpenHelper
     protected static final String ITEM = "ITEM";
     protected static final String TAG = "TAG";
 
+    private CrateSQLiteOpenHelper crateSQLiteOpenHelper;
     private Gson gson;
     private String tableName;
 
-    protected Store(Context context) {
-        super(context, DATABASE_NAME, null, STORE_VERSION);
+    protected Store(Context context)
+    {
+        crateSQLiteOpenHelper = new CrateSQLiteOpenHelper(context);
         tableName = this.getClass().getSimpleName();
         gson = new Gson();
     }
 
-    @Override
-    public final void onCreate(SQLiteDatabase db) {
-
-    }
-
-    @Override
-    public final void onOpen(SQLiteDatabase db) {
-        super.onOpen(db);
-        String createStatement = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
-                ID + " TEXT PRIMARY KEY," + ITEM + " TEXT," + TAG + " TEXT)";
-        db.execSQL(createStatement);
-    }
-
-    @Override
-    public final void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
-
-        if(cursor.moveToFirst())
-        {
-            do
-            {
-                String currentTableName = cursor.getString(0);
-                db.execSQL("DROP TABLE IF EXISTS " + currentTableName);
-            }
-            while (cursor.moveToNext());
-        }
-        cursor.close();
-    }
 
     protected void beforeSave(T item)
     {
@@ -68,7 +42,7 @@ abstract class Store<T extends HasId> extends SQLiteOpenHelper
 
     public final T getById(String itemId)
     {
-        SQLiteDatabase database = getReadableDatabase();
+        SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
         T item = null;
 
         Cursor cursor = database.rawQuery("SELECT * FROM " + tableName + " WHERE " + ID + " =?", new String[]{itemId});
@@ -98,7 +72,7 @@ abstract class Store<T extends HasId> extends SQLiteOpenHelper
 
     public final boolean exists(String itemId)
     {
-        SQLiteDatabase database = getReadableDatabase();
+        SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
         Cursor cursor = database.rawQuery("SELECT * FROM " + tableName + " WHERE " + ID + " =?", new String[]{itemId});
 
         boolean isInDatabase = cursor != null && cursor.moveToFirst();
@@ -111,7 +85,7 @@ abstract class Store<T extends HasId> extends SQLiteOpenHelper
 
     public final List<T> getByTag(String itemTag)
     {
-        SQLiteDatabase database = getReadableDatabase();
+        SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
 
         List<T> items = new ArrayList<T>();
 
@@ -136,7 +110,7 @@ abstract class Store<T extends HasId> extends SQLiteOpenHelper
 
     public final T getFirstByTag(String itemTag)
     {
-        SQLiteDatabase database = getReadableDatabase();
+        SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
 
         T item = null;
         Cursor cursor = database.rawQuery("SELECT * FROM " + tableName + " WHERE " + TAG + " =?", new String[]{itemTag});
@@ -155,7 +129,7 @@ abstract class Store<T extends HasId> extends SQLiteOpenHelper
 
     public final void replaceTag(Collection<T> items,String itemTag)
     {
-        SQLiteDatabase database = getWritableDatabase();
+        SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
         database.delete(tableName, TAG + "=?", new String[]{itemTag});
         for(T item : items)
         {
@@ -166,7 +140,7 @@ abstract class Store<T extends HasId> extends SQLiteOpenHelper
 
     public final void replaceTag(T item,String itemTag)
     {
-        SQLiteDatabase database = getWritableDatabase();
+        SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
         database.delete(tableName, TAG + "=?", new String[]{itemTag});
         putItem(item,itemTag);
         database.close();
@@ -174,7 +148,7 @@ abstract class Store<T extends HasId> extends SQLiteOpenHelper
 
     public final List<T> getAll()
     {
-        SQLiteDatabase database = getReadableDatabase();
+        SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
 
         List<T> items = new ArrayList<T>();
 
@@ -212,7 +186,7 @@ abstract class Store<T extends HasId> extends SQLiteOpenHelper
         {
             values.put(TAG,tag);
         }
-        SQLiteDatabase database = getWritableDatabase();
+        SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
         if(exists(item.getId()))
         {
             database.update(tableName, values, "ID=?", new String[]{item.getId()});
@@ -244,6 +218,44 @@ abstract class Store<T extends HasId> extends SQLiteOpenHelper
     {
         ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
         return parameterizedType.getActualTypeArguments()[0];
+    }
+
+    private class CrateSQLiteOpenHelper extends SQLiteOpenHelper
+    {
+
+        public CrateSQLiteOpenHelper(Context context)
+        {
+            super(context,DATABASE_NAME,null,STORE_VERSION);
+        }
+
+        @Override
+        public final void onCreate(SQLiteDatabase db) {
+
+        }
+
+        @Override
+        public final void onOpen(SQLiteDatabase db) {
+            super.onOpen(db);
+            String createStatement = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
+                    ID + " TEXT PRIMARY KEY," + ITEM + " TEXT," + TAG + " TEXT)";
+            db.execSQL(createStatement);
+        }
+
+        @Override
+        public final void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
+
+            if(cursor.moveToFirst())
+            {
+                do
+                {
+                    String currentTableName = cursor.getString(0);
+                    db.execSQL("DROP TABLE IF EXISTS " + currentTableName);
+                }
+                while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
     }
 
 }
