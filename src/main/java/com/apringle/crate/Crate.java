@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-abstract class Store<T extends HasId>
+abstract class Crate<T extends HasId>
 {
     private static final int STORE_VERSION = 1;
     private static final String DATABASE_NAME = "CRATE_DATABASE";
@@ -28,7 +28,7 @@ abstract class Store<T extends HasId>
     private Gson gson;
     private String tableName;
 
-    protected Store(Context context)
+    protected Crate(Context context)
     {
         crateSQLiteOpenHelper = new CrateSQLiteOpenHelper(context);
         tableName = this.getClass().getSimpleName();
