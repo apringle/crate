@@ -13,12 +13,16 @@
     <url>http://github.com/apringle/crate/</url>
     <inceptionYear>2015</inceptionYear>
 
+    <properties>
+        <android.version>4.1.1.4</android.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.google.android</groupId>
             <artifactId>android</artifactId>
             <scope>provided</scope>
-            <version>4.1.1.4</version>
+            <version>${android.version}</version>
         </dependency>
 
         <dependency>
