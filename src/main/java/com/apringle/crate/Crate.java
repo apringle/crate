@@ -127,6 +127,27 @@ abstract class Crate<T extends HasId>
         database.close();
     }
 
+    public final void removeWithId(String itemId)
+    {
+        SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
+        database.delete(tableName, ID + "=?", new String[]{itemId});
+        database.close();
+    }
+
+    public final void removeWithTag(String itemTag)
+    {
+        SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
+        database.delete(tableName, TAG + "=?", new String[]{itemTag});
+        database.close();
+    }
+
+    public final void removeAll()
+    {
+        SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
+        database.delete(tableName, null, null);
+        database.close();
+    }
+
     public final List<T> all()
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
