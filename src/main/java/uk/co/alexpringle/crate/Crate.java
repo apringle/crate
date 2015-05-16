@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-abstract class Crate<T extends HasId>
+public abstract class Crate<T extends HasId>
 {
     private static final int STORE_VERSION = 1;
     private static final String DATABASE_NAME = "CRATE_DATABASE";
