@@ -5,15 +5,21 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import org.robolectric.RuntimeEnvironment;
 import uk.co.alexpringle.crate.Crate;
+import uk.co.alexpringle.crate.test.crates.SimpleItem;
 
 import java.lang.reflect.Field;
+import java.util.Date;
+import java.util.Random;
 
 public class TestHelper
 {
+    private Random random;
     private SQLiteOpenHelper helperSQLiteOpenHelper;
 
     public TestHelper() throws NoSuchFieldException, IllegalAccessException
     {
+        random = new Random(100);
+
         Field dbNameField = Crate.class.getDeclaredField("DATABASE_NAME");
         dbNameField.setAccessible(true);
         String databaseName = (String) dbNameField.get(null);
@@ -59,5 +65,21 @@ public class TestHelper
             cursor.close();
             database.close();
         }
+    }
+
+    public SimpleItem createRandomSimpleItem()
+    {
+        SimpleItem simpleItem = new SimpleItem();
+
+        simpleItem.setId(Integer.toHexString(random.nextInt()));
+        simpleItem.setName("Forename Surname" + random.nextInt());
+        simpleItem.setEmail("email@email.com");
+        simpleItem.setBalance(random.nextDouble());
+        simpleItem.setSomeInt(random.nextInt());
+        simpleItem.setSomeLong(random.nextLong());
+        simpleItem.setSomeFloat(random.nextFloat());
+        simpleItem.setEnabled(random.nextBoolean());
+
+        return simpleItem;
     }
 }
