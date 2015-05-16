@@ -230,6 +230,12 @@ public abstract class Crate<T extends HasId>
         return parameterizedType.getActualTypeArguments()[0];
     }
 
+    public final void close()
+    {
+        tableSQLiteHelperMap.remove(this.tableName);
+        this.crateSQLiteOpenHelper.close();
+    }
+
     private static class CrateSQLiteOpenHelper extends SQLiteOpenHelper
     {
         private String tableName;
