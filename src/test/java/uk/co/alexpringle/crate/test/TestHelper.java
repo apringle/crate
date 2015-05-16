@@ -8,7 +8,8 @@ import uk.co.alexpringle.crate.Crate;
 import uk.co.alexpringle.crate.test.crates.SimpleItem;
 
 import java.lang.reflect.Field;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class TestHelper
@@ -81,5 +82,15 @@ public class TestHelper
         simpleItem.setEnabled(random.nextBoolean());
 
         return simpleItem;
+    }
+
+    public List<SimpleItem> createRandomSimpleItems(int count)
+    {
+        List<SimpleItem> items = new ArrayList<SimpleItem>();
+        for(int i = 0; i < count;i++)
+        {
+            items.add(createRandomSimpleItem());
+        }
+        return items;
     }
 }
