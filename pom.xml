@@ -4,7 +4,7 @@
 
     <groupId>uk.co.alexpringle</groupId>
     <artifactId>crate</artifactId>
-    <version>0.1.3-SNAPSHOT</version>
+    <version>0.1.3</version>
 
     <name>Crate</name>
     <description>Simple storage for Android objects.</description>
@@ -50,7 +50,7 @@
         <url>http://github.com/apringle/crate/</url>
         <connection>scm:git:git://github.com/apringle/crate.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/apringle/crate.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>crate-0.1.3</tag>
     </scm>
 
     <issueManagement>
