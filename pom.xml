@@ -50,7 +50,6 @@
         <url>http://github.com/apringle/crate/</url>
         <connection>scm:git:git://github.com/apringle/crate.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/apringle/crate.git</developerConnection>
-      <tag>HEAD</tag>
   </scm>
 
     <issueManagement>
