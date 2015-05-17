@@ -1,5 +1,9 @@
-<server>
-    <id>bintray</id>
-    <username>apringle</username>
-    <password>${env.BINTRAY_API_KEY}</password>
-</server>
+<settings>
+    <servers>
+        <server>
+            <id>bintray</id>
+            <username>apringle</username>
+            <password>${env.BINTRAY_API_KEY}</password>
+        </server>
+    </servers>
+</settings>
