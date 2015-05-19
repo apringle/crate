@@ -209,7 +209,7 @@ public abstract class Crate<T extends HasId>
         database.close();
     }
 
-    public final void put(List<T> items)
+    public final void put(Collection<T> items)
     {
         for(T currentItem : items)
         {
@@ -217,7 +217,7 @@ public abstract class Crate<T extends HasId>
         }
     }
 
-    public final void put(List<T> items, String tag)
+    public final void put(Collection<T> items, String tag)
     {
         for(T currentItem : items)
         {
