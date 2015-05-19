@@ -12,13 +12,13 @@ import com.google.gson.JsonSyntaxException;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public abstract class Crate<T extends HasId>
 {
+    private static String LOG_TAG = "Crate";
+    public static boolean LOGGING_ENABLED = true;
+
     private static final int STORE_VERSION = 1;
     private static final String DATABASE_NAME = "CRATE_DATABASE";
     private static final String ID = "ID";
@@ -60,10 +60,11 @@ public abstract class Crate<T extends HasId>
             try
             {
                 item = gson.fromJson(cursor.getString(cursor.getColumnIndex(ITEM)), getStoreType());
+                log("Retrieved item ",item);
             }
             catch(JsonSyntaxException e)
             {
-                Log.e("GroupLab", "Failed to read item with id : " + itemId);
+                error("Failed to read item with id " + itemId, null);
                 e.printStackTrace();
             }
             finally
@@ -73,7 +74,7 @@ public abstract class Crate<T extends HasId>
         }
         else
         {
-            Log.d("GroupLab", "No item in store with id :" + itemId);
+            log("No item in crate with id " + itemId,null);
         }
 
         return item;
@@ -88,6 +89,15 @@ public abstract class Crate<T extends HasId>
         if(cursor != null)
         {
             cursor.close();
+        }
+
+        if(isInDatabase)
+        {
+            log("No item in crate with id " + itemId,null);
+        }
+        else
+        {
+            log("Item in crate with id " + itemId,null);
         }
         return isInDatabase;
     }
@@ -108,10 +118,11 @@ public abstract class Crate<T extends HasId>
             }
             while(cursor.moveToNext());
             cursor.close();
+            log("Retrieved " + items.size() + " items with tag " + itemTag,null);
         }
         else
         {
-            Log.d("GroupLab", "No items in store with tag :" + itemTag);
+            log("No items in crate, with tag " + itemTag, null);
         }
 
         return items;
@@ -120,41 +131,50 @@ public abstract class Crate<T extends HasId>
     public final void replace(String itemTag, Collection<T> items)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
-        database.delete(tableName, TAG + "=?", new String[]{itemTag});
-        for(T item : items)
-        {
-            put(item, itemTag);
-        }
+        int itemsRemoved = database.delete(tableName, TAG + "=?", new String[]{itemTag});
+        log("Removed " + itemsRemoved + " items with tag " + itemTag,null);
+        put(items,itemTag);
         database.close();
     }
 
     public final void replace(String itemTag, T item)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
-        database.delete(tableName, TAG + "=?", new String[]{itemTag});
-        put(item, itemTag);
+        int itemsRemoved = database.delete(tableName, TAG + "=?", new String[]{itemTag});
+        log("Removed " + itemsRemoved + " items with tag " + itemTag,null);
+        put(item, itemTag,true);
         database.close();
     }
 
     public final void removeWithId(String itemId)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
-        database.delete(tableName, ID + "=?", new String[]{itemId});
+        int itemsRemoved = database.delete(tableName, ID + "=?", new String[]{itemId});
         database.close();
+        if(itemsRemoved == 1)
+        {
+            log("Removed item with id " + itemId,null);
+        }
+        else
+        {
+            log("No item to remove with id " + itemId,null);
+        }
     }
 
     public final void removeWithTag(String itemTag)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
-        database.delete(tableName, TAG + "=?", new String[]{itemTag});
+        int itemsRemoved = database.delete(tableName, TAG + "=?", new String[]{itemTag});
         database.close();
+        log("Removed " + itemsRemoved + "items with tag " + itemTag,null);
     }
 
     public final void removeAll()
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
-        database.delete(tableName, null, null);
+        int itemsRemoved = database.delete(tableName, null, null);
         database.close();
+        log("Removed " + itemsRemoved + " items",null);
     }
 
     public final List<T> all()
@@ -173,10 +193,11 @@ public abstract class Crate<T extends HasId>
             }
             while(cursor.moveToNext());
             cursor.close();
+            log("Retrieved " + items.size() + " items", null);
         }
         else
         {
-            Log.d("GroupLab", "No items in store");
+            log("No items in crate",null);
         }
 
         return items;
@@ -184,10 +205,15 @@ public abstract class Crate<T extends HasId>
 
     public final void put(T item)
     {
-        put(item, null);
+        put(item,null,true);
     }
 
     public final void put(T item, String tag)
+    {
+        put(item,tag,true);
+    }
+
+    private void put(T item, String tag, boolean log)
     {
         beforeSave(item);
         ContentValues values = new ContentValues();
@@ -207,22 +233,36 @@ public abstract class Crate<T extends HasId>
             database.insert(tableName, null, values);
         }
         database.close();
+
+        if(log)
+        {
+            if(tag == null)
+            {
+                log("Stored item",item);
+            }
+            else
+            {
+                log("Stored item with tag " + tag,item);
+            }
+        }
     }
 
     public final void put(Collection<T> items)
     {
         for(T currentItem : items)
         {
-            put(currentItem, null);
+            put(currentItem, null, false);
         }
+        log("Stored " + items.size() + " items", null);
     }
 
     public final void put(Collection<T> items, String tag)
     {
         for(T currentItem : items)
         {
-            put(currentItem, tag);
+            put(currentItem, tag, false);
         }
+        log("Stored " + items.size() + " items with tag " + tag,null);
     }
 
     private Type getStoreType()
@@ -235,7 +275,41 @@ public abstract class Crate<T extends HasId>
     {
         tableSQLiteHelperMap.remove(this.tableName);
         this.crateSQLiteOpenHelper.close();
+        log("Closed crate",null);
     }
+
+    private String buildLogMessage(String message, T item)
+    {
+        StringBuilder logStringBuilder = new StringBuilder(this.getClass().getSimpleName());
+
+        logStringBuilder.append("[");
+        logStringBuilder.append("@");
+        logStringBuilder.append(Integer.toHexString(hashCode()));
+        logStringBuilder.append("] ");
+        logStringBuilder.append(message);
+
+        if(item != null)
+        {
+            logStringBuilder.append("\n");
+            logStringBuilder.append(item);
+        }
+
+        return logStringBuilder.toString();
+    }
+
+    private void log(String message,T item)
+    {
+        if(LOGGING_ENABLED)
+        {
+            Log.d(LOG_TAG,buildLogMessage(message,item));
+        }
+    }
+
+    private void error(String message,T item)
+    {
+        Log.e(LOG_TAG,buildLogMessage(message,item));
+    }
+
 
     private static class CrateSQLiteOpenHelper extends SQLiteOpenHelper
     {
