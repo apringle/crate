@@ -33,7 +33,8 @@ public abstract class Crate<T extends HasId>
 
     protected Crate(Context context)
     {
-        tableName = this.getClass().getSimpleName();
+        tableName = this.getClass().getName();
+        tableName = tableName.replace(".","");
         crateSQLiteOpenHelper = tableSQLiteHelperMap.get(tableName);
         if(crateSQLiteOpenHelper == null)
         {
