@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLog;
 import uk.co.alexpringle.crate.test.crates.SimpleCrate;
 import uk.co.alexpringle.crate.test.crates.SimpleItem;
 
@@ -23,6 +24,7 @@ public class CrateTest
     @Before
     public void setUp() throws Exception
     {
+        ShadowLog.stream = System.out;
         testHelper = new TestHelper();
         testCrate = new SimpleCrate(RuntimeEnvironment.application);
     }
