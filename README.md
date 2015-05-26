@@ -66,7 +66,7 @@ crate is available in Jcenter, grab the latest jar or use Gradle.
 #### Gradle
 
 ```groovy
-compile 'uk.co.alexpringle:crate:0.1.6'
+compile 'uk.co.alexpringle:crate:0.1.7'
 ```
 
 #### License
