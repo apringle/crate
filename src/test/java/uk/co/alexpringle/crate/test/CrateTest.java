@@ -1,9 +1,7 @@
 package uk.co.alexpringle.crate.test;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
@@ -12,6 +10,7 @@ import org.robolectric.shadows.ShadowLog;
 import uk.co.alexpringle.crate.test.crates.SimpleCrate;
 import uk.co.alexpringle.crate.test.crates.SimpleItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(RobolectricTestRunner.class)
@@ -20,6 +19,9 @@ public class CrateTest
 {
     private TestHelper testHelper;
     private SimpleCrate testCrate;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception
@@ -180,7 +182,7 @@ public class CrateTest
     public void replaceSingle()
     {
         List<SimpleItem> unrelatedItems = testHelper.createRandomSimpleItems(3);
-        testCrate.put(unrelatedItems,"UNRELATED_TAG");
+        testCrate.put(unrelatedItems, "UNRELATED_TAG");
 
         List<SimpleItem> existingItems = testHelper.createRandomSimpleItems(8);
         testCrate.put(existingItems, "TEST_TAG");
@@ -201,7 +203,7 @@ public class CrateTest
     public void replaceMultiple()
     {
         List<SimpleItem> unrelatedItems = testHelper.createRandomSimpleItems(3);
-        testCrate.put(unrelatedItems,"UNRELATED_TAG");
+        testCrate.put(unrelatedItems, "UNRELATED_TAG");
 
         List<SimpleItem> existingItems = testHelper.createRandomSimpleItems(4);
         testCrate.put(existingItems, "TEST_TAG");
@@ -221,4 +223,85 @@ public class CrateTest
         Assert.assertEquals(3, retrievedUnrelatedItems.size());
     }
 
+    @Test
+    public void withNullId()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        testCrate.withId(null);
+    }
+
+    @Test
+    public void existsNullId()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        testCrate.exists(null);
+    }
+
+    @Test
+    public void withNullTag()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        testCrate.withTag(null);
+    }
+
+    @Test
+    public void replaceNullTag()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        testCrate.replace(null, new ArrayList<SimpleItem>());
+    }
+
+    @Test
+    public void replaceNullItems()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        List<SimpleItem> nullItemList = null;
+        testCrate.replace("TAG",nullItemList);
+    }
+
+    @Test
+    public void replaceNullItem()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        SimpleItem nullSimpleItem = null;
+        testCrate.replace("TAG",nullSimpleItem);
+    }
+
+    @Test
+    public void removeNullId()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        testCrate.removeWithId(null);
+    }
+
+    @Test
+    public void removeNullTag()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        testCrate.removeWithTag(null);
+    }
+
+    @Test
+    public void putNullItem()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        SimpleItem nullItem = null;
+        testCrate.put(nullItem);
+    }
+
+    @Test
+    public void putNullItems()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        List<SimpleItem> nullItemList = null;
+        testCrate.put(nullItemList);
+    }
+
+    @Test
+    public void putItemsNullTag()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        List<SimpleItem> items = new ArrayList<SimpleItem>();
+        testCrate.put(items,null);
+    }
 }
