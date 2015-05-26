@@ -6,17 +6,23 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 public abstract class Crate<T extends HasId>
 {
     private static String LOG_TAG = "Crate";
+
+    /**
+     * Used to enable or disable debug logging
+     */
     public static boolean LOGGING_ENABLED = true;
 
     private static final int STORE_VERSION = 1;
@@ -45,10 +51,18 @@ public abstract class Crate<T extends HasId>
     }
 
 
+    /**
+     * Called before any item is stored in the crate. Useful for tasks such as nulling password fields.
+     * @param item The item to be stored in the crate
+     */
     protected void beforeSave(T item)
     {
     }
 
+    /**
+     * @param itemId Id of item to retrieve
+     * @return Item if exists, otherwise null
+     */
     public final T withId(String itemId)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
@@ -80,6 +94,10 @@ public abstract class Crate<T extends HasId>
         return item;
     }
 
+    /**
+     * @param itemId Id of item
+     * @return True if item exists in the crate
+     */
     public final boolean exists(String itemId)
     {
         return exists(itemId,true);
@@ -110,6 +128,10 @@ public abstract class Crate<T extends HasId>
         return isInDatabase;
     }
 
+    /**
+     * @param itemTag Tag of items
+     * @return All tagged items or empty list
+     */
     public final List<T> withTag(String itemTag)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
@@ -136,6 +158,11 @@ public abstract class Crate<T extends HasId>
         return items;
     }
 
+    /**
+     * Replaces all items with the given tag with new items with the same tag
+     * @param itemTag Tag to replace
+     * @param items Replacement items to store in the crate
+     */
     public final void replace(String itemTag, Collection<T> items)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
@@ -145,6 +172,11 @@ public abstract class Crate<T extends HasId>
         database.close();
     }
 
+    /**
+     * Replaces all items with the given tag with a new item with the same tag
+     * @param itemTag Tag to replace
+     * @param item Replacement item to store in the crate
+     */
     public final void replace(String itemTag, T item)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
@@ -154,6 +186,9 @@ public abstract class Crate<T extends HasId>
         database.close();
     }
 
+    /**
+     * @param itemId Id of item to remove
+     */
     public final void removeWithId(String itemId)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
@@ -169,6 +204,9 @@ public abstract class Crate<T extends HasId>
         }
     }
 
+    /**
+     * @param itemTag Tag of items to remove
+     */
     public final void removeWithTag(String itemTag)
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
@@ -177,6 +215,9 @@ public abstract class Crate<T extends HasId>
         log("Removed " + itemsRemoved + "items with tag " + itemTag,null);
     }
 
+    /**
+     * Removes all items from crate
+     */
     public final void removeAll()
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
@@ -185,6 +226,9 @@ public abstract class Crate<T extends HasId>
         log("Removed " + itemsRemoved + " items",null);
     }
 
+    /**
+     * @return All items in crate
+     */
     public final List<T> all()
     {
         SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
@@ -211,11 +255,19 @@ public abstract class Crate<T extends HasId>
         return items;
     }
 
+    /**
+     * @param item Item to store in crate
+     */
     public final void put(T item)
     {
         put(item,null,true);
     }
 
+    /**
+     *
+     * @param item Item to store in crate
+     * @param tag Tag for item
+     */
     public final void put(T item, String tag)
     {
         put(item,tag,true);
@@ -255,6 +307,10 @@ public abstract class Crate<T extends HasId>
         }
     }
 
+    /**
+     *
+     * @param items Items to store in crate
+     */
     public final void put(Collection<T> items)
     {
         for(T currentItem : items)
@@ -264,6 +320,11 @@ public abstract class Crate<T extends HasId>
         log("Stored " + items.size() + " items", null);
     }
 
+    /**
+     *
+     * @param items Items to store in crate
+     * @param tag Tag for items
+     */
     public final void put(Collection<T> items, String tag)
     {
         for(T currentItem : items)
