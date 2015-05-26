@@ -65,6 +65,8 @@ public abstract class Crate<T extends HasId>
      */
     public final T withId(String itemId)
     {
+        throwIfNull("itemId",itemId);
+
         SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
         T item = null;
 
@@ -100,6 +102,7 @@ public abstract class Crate<T extends HasId>
      */
     public final boolean exists(String itemId)
     {
+        throwIfNull("itemId",itemId);
         return exists(itemId,true);
     }
 
@@ -134,6 +137,8 @@ public abstract class Crate<T extends HasId>
      */
     public final List<T> withTag(String itemTag)
     {
+        throwIfNull("itemTag",itemTag);
+
         SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
 
         List<T> items = new ArrayList<T>();
@@ -165,6 +170,9 @@ public abstract class Crate<T extends HasId>
      */
     public final void replace(String itemTag, Collection<T> items)
     {
+        throwIfNull("itemTag",itemTag);
+        throwIfNull("items",items);
+
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
         int itemsRemoved = database.delete(tableName, TAG + "=?", new String[]{itemTag});
         log("Removed " + itemsRemoved + " items with tag " + itemTag,null);
@@ -179,6 +187,9 @@ public abstract class Crate<T extends HasId>
      */
     public final void replace(String itemTag, T item)
     {
+        throwIfNull("itemTag", itemTag);
+        throwIfNull("item",item);
+
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
         int itemsRemoved = database.delete(tableName, TAG + "=?", new String[]{itemTag});
         log("Removed " + itemsRemoved + " items with tag " + itemTag,null);
@@ -191,6 +202,8 @@ public abstract class Crate<T extends HasId>
      */
     public final void removeWithId(String itemId)
     {
+        throwIfNull("itemId",itemId);
+
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
         int itemsRemoved = database.delete(tableName, ID + "=?", new String[]{itemId});
         database.close();
@@ -209,6 +222,8 @@ public abstract class Crate<T extends HasId>
      */
     public final void removeWithTag(String itemTag)
     {
+        throwIfNull("itemTag", itemTag);
+
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
         int itemsRemoved = database.delete(tableName, TAG + "=?", new String[]{itemTag});
         database.close();
@@ -275,6 +290,7 @@ public abstract class Crate<T extends HasId>
 
     private void put(T item, String tag, boolean log)
     {
+        throwIfNull("item",item);
         beforeSave(item);
         ContentValues values = new ContentValues();
         values.put(ID,item.getId());
@@ -313,6 +329,7 @@ public abstract class Crate<T extends HasId>
      */
     public final void put(Collection<T> items)
     {
+        throwIfNull("items",items);
         for(T currentItem : items)
         {
             put(currentItem, null, false);
@@ -327,6 +344,9 @@ public abstract class Crate<T extends HasId>
      */
     public final void put(Collection<T> items, String tag)
     {
+        throwIfNull("items",items);
+        throwIfNull("tag", tag);
+
         for(T currentItem : items)
         {
             put(currentItem, tag, false);
@@ -346,6 +366,15 @@ public abstract class Crate<T extends HasId>
         this.crateSQLiteOpenHelper.close();
         log("Closed crate",null);
     }
+
+    private void throwIfNull(String paramName,Object object)
+    {
+        if(object == null)
+        {
+            throw new IllegalArgumentException(paramName + " can not be null");
+        }
+    }
+
 
     private String buildLogMessage(String message, T item)
     {
