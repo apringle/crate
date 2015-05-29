@@ -176,8 +176,8 @@ public abstract class Crate<T extends HasId>
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
         int itemsRemoved = database.delete(tableName, TAG + "=?", new String[]{itemTag});
         log("Removed " + itemsRemoved + " items with tag " + itemTag,null);
-        put(items,itemTag);
         database.close();
+        put(items, itemTag);
     }
 
     /**
