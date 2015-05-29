@@ -304,4 +304,23 @@ public class CrateTest
         List<SimpleItem> items = new ArrayList<SimpleItem>();
         testCrate.put(items,null);
     }
+
+    @Test
+    public void putTenKItemsWithTag()
+    {
+        List<SimpleItem> items = testHelper.createRandomSimpleItems(10000);
+        testCrate.put(items, "TENK");
+        List<SimpleItem> itemsFromStorage = testCrate.withTag("TENK");
+        Assert.assertEquals(10000, itemsFromStorage.size());
+    }
+
+    @Test
+    public void putTwentyFiveKItems()
+    {
+        List<SimpleItem> items = testHelper.createRandomSimpleItems(25000);
+        testCrate.put(items);
+        List<SimpleItem> itemsFromStorage = testCrate.all();
+        Assert.assertEquals(25000,itemsFromStorage.size());
+    }
+
 }
