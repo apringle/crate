@@ -193,7 +193,7 @@ public abstract class Crate<T extends HasId>
         SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
         int itemsRemoved = database.delete(tableName, TAG + "=?", new String[]{itemTag});
         log("Removed " + itemsRemoved + " items with tag " + itemTag,null);
-        put(item, itemTag,true);
+        put(item, itemTag,true,database);
         database.close();
     }
 
@@ -275,7 +275,7 @@ public abstract class Crate<T extends HasId>
      */
     public final void put(T item)
     {
-        put(item,null,true);
+        put(item,null,true,null);
     }
 
     /**
@@ -285,10 +285,10 @@ public abstract class Crate<T extends HasId>
      */
     public final void put(T item, String tag)
     {
-        put(item,tag,true);
+        put(item, tag, true,null);
     }
 
-    private void put(T item, String tag, boolean log)
+    private void put(T item, String tag, boolean log,SQLiteDatabase pDatabase)
     {
         throwIfNull("item",item);
         beforeSave(item);
@@ -299,7 +299,12 @@ public abstract class Crate<T extends HasId>
         {
             values.put(TAG,tag);
         }
-        SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
+        SQLiteDatabase database = pDatabase;
+        if(pDatabase == null)
+        {
+            database = crateSQLiteOpenHelper.getWritableDatabase();
+        }
+
         if(exists(item.getId(),false))
         {
             database.update(tableName, values, "ID=?", new String[]{item.getId()});
@@ -308,7 +313,11 @@ public abstract class Crate<T extends HasId>
         {
             database.insert(tableName, null, values);
         }
-        database.close();
+
+        if(pDatabase == null)
+        {
+            database.close();
+        }
 
         if(log)
         {
@@ -329,11 +338,16 @@ public abstract class Crate<T extends HasId>
      */
     public final void put(Collection<T> items)
     {
-        throwIfNull("items",items);
+        throwIfNull("items", items);
+        SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
+        database.beginTransaction();
         for(T currentItem : items)
         {
-            put(currentItem, null, false);
+            put(currentItem, null, false,database);
         }
+        database.setTransactionSuccessful();
+        database.endTransaction();
+        database.close();
         log("Stored " + items.size() + " items", null);
     }
 
@@ -344,14 +358,19 @@ public abstract class Crate<T extends HasId>
      */
     public final void put(Collection<T> items, String tag)
     {
-        throwIfNull("items",items);
+        throwIfNull("items", items);
         throwIfNull("tag", tag);
 
+        SQLiteDatabase database = crateSQLiteOpenHelper.getWritableDatabase();
+        database.beginTransaction();
         for(T currentItem : items)
         {
-            put(currentItem, tag, false);
+            put(currentItem, tag, false,database);
         }
-        log("Stored " + items.size() + " items with tag " + tag,null);
+        database.setTransactionSuccessful();
+        database.endTransaction();
+        database.close();
+        log("Stored " + items.size() + " items with tag " + tag, null);
     }
 
     private Type getStoreType()
