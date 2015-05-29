@@ -3,6 +3,7 @@ package uk.co.alexpringle.crate;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -114,14 +115,7 @@ public abstract class Crate<T extends HasId>
             database = crateSQLiteOpenHelper.getReadableDatabase();
         }
 
-        Cursor cursor = database.rawQuery("SELECT * FROM " + tableName + " WHERE " + ID + " =?", new String[]{itemId});
-
-
-        boolean isInDatabase = cursor != null && cursor.moveToFirst();
-        if(cursor != null)
-        {
-            cursor.close();
-        }
+        boolean isInDatabase = DatabaseUtils.queryNumEntries(database, tableName, ID + "=?", new String[]{itemId}) > 0;
 
         if(pDatabase == null)
         {
