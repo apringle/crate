@@ -103,18 +103,29 @@ public abstract class Crate<T extends HasId>
     public final boolean exists(String itemId)
     {
         throwIfNull("itemId",itemId);
-        return exists(itemId,true);
+        return exists(itemId,true,null);
     }
 
-    private boolean exists(String itemId,boolean log)
+    private boolean exists(String itemId,boolean log,SQLiteDatabase pDatabase)
     {
-        SQLiteDatabase database = crateSQLiteOpenHelper.getReadableDatabase();
+        SQLiteDatabase database = pDatabase;
+        if(pDatabase == null)
+        {
+            database = crateSQLiteOpenHelper.getReadableDatabase();
+        }
+
         Cursor cursor = database.rawQuery("SELECT * FROM " + tableName + " WHERE " + ID + " =?", new String[]{itemId});
+
 
         boolean isInDatabase = cursor != null && cursor.moveToFirst();
         if(cursor != null)
         {
             cursor.close();
+        }
+
+        if(pDatabase == null)
+        {
+            database.close();
         }
 
         if(log)
@@ -128,6 +139,7 @@ public abstract class Crate<T extends HasId>
                 log("Item in crate with id " + itemId,null);
             }
         }
+
         return isInDatabase;
     }
 
@@ -305,7 +317,7 @@ public abstract class Crate<T extends HasId>
             database = crateSQLiteOpenHelper.getWritableDatabase();
         }
 
-        if(exists(item.getId(),false))
+        if(exists(item.getId(),false,database))
         {
             database.update(tableName, values, "ID=?", new String[]{item.getId()});
         }
